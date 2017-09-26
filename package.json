@@ -1,0 +1,16 @@
+{
+    "name": "gonetwork-poc-contracts",
+    "version": "0.0.1",
+    "author": "Amit Shah<amitshah@gonetwork.com>",
+    "description": "Simple contracts for gonetwork poc wallet",
+    "license": "MIT",
+    "engines": {
+        "node": ">=0.10"
+    },
+    "scripts": {
+        "start": "truffle test"
+    },
+    "dependencies": {
+        "zeppelin-solidity": "*"
+    }
+}
