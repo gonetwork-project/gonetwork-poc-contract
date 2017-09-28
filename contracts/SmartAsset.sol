@@ -15,7 +15,7 @@ contract SmartAsset is TokenDestructible,Verify{
   bytes32 s;
   uint256 public cost;
   bool public sellable;
-  address tokenAddress;
+  address public tokenAddress;
 
   function SmartAsset(address _creator, uint256 _cost, address _tokenAddress){
     cost = _cost;

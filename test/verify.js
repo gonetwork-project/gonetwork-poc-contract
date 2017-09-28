@@ -50,7 +50,7 @@ contract('Verify', function(accounts) {
 
   it("should pass signer verification", function() {
     // Get a reference to the deployed MetaCoin contract, as a JS object.
-    Verify.deployed().then(function(instance){
+    return Verify.deployed().then(function(instance){
 
         let addr = web3.eth.accounts[0]
         let msg = web3.sha3(instance.address);
@@ -74,7 +74,7 @@ contract('Verify', function(accounts) {
 
   it("should fail signer verification", function() {
     // Get a reference to the deployed MetaCoin contract, as a JS object.
-    Verify.deployed().then(function(instance){
+    return Verify.deployed().then(function(instance){
 
         let addr = web3.eth.accounts[0]
         let msg = web3.sha3(instance.address);

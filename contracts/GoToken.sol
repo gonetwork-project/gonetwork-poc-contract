@@ -7,16 +7,16 @@ import './SmartAsset.sol';
 import './token/SafeERC20.sol';
 
 contract GoToken is StandardToken,IAssetManager {
-  using SafeERC20 for ERC20;
+
   string public constant name = "GoToken";
   string public constant symbol = "GOTK";
   uint8 public constant decimals = 18;
 
   uint256 public constant INITIAL_SUPPLY = 10000 * (10 ** uint256(decimals));
-  address private minter;
+  address public minter;
   uint256 public constant TRANSACTION_FEE_PPT = 15; //1.5%
   uint256 public constant CREATOR_SECONDARY_PPT = 300;  //30%
-  uint256 public constant RESELLER_PPT = 650;//65%
+  uint256 public constant RESELLER_PPT = 700;//65%
   uint256 public constant CREATOR_PRIMARY_PPT= 950; //95%
   uint256 public constant ASSET_STAKE_PPT = 50;//5%
   /**
@@ -49,26 +49,34 @@ contract GoToken is StandardToken,IAssetManager {
     require(asset != address(0));
     uint256 cost = asset.cost();
     require(balanceOf(msg.sender) > cost);
+
+    //minter always takes 1.5% of total cost on every transaction
+    //remove the available funds from the cost
     uint256 fee = calc_ppt(cost,TRANSACTION_FEE_PPT);
     cost = SafeMath.sub(cost,fee);
-    uint256 stake =calc_ppt(cost, ASSET_STAKE_PPT );
-    cost = SafeMath.sub(cost,stake);
+
+    //whatever is left now distribute
+    uint256 creatorPay = 0;
     if(asset.creator() == asset.owner()){
-      //transfer(asset.creator(), cost * 95 /100);
-      SafeERC20.safeTransfer(this,asset.creator(), cost);
-      SafeERC20.safeTransfer(this,minter, fee);
-      SafeERC20.safeTransfer(this,address(asset), stake);
-      asset.changeOwnership(msg.sender);
-      //transfer(address(asset))
+      uint256 stake =calc_ppt(cost, ASSET_STAKE_PPT );
+      //cost - stake goes to the creator
+      creatorPay = SafeMath.sub(cost,stake);
+
+      //PAY EVERYONE
+      assert(transfer(minter, fee));
+      assert(transfer(asset.creator(), creatorPay));
+      assert(transfer(address(asset), stake));//claimed during burning
     }else{
-      SafeERC20.safeTransfer(this,asset.creator(), calc_ppt(cost,CREATOR_SECONDARY_PPT));
-      SafeERC20.safeTransfer(this,minter, fee);
-      asset.changeOwnership(msg.sender);
+      creatorPay = calc_ppt(cost,CREATOR_SECONDARY_PPT);
+      uint256 resellerPay = calc_ppt(cost,RESELLER_PPT);
+
+      //PAY EVERYONE
+      assert(transfer(minter, fee));
+      assert(transfer(asset.creator(), creatorPay));
+      assert(transfer(asset.owner(), resellerPay));
     }
-    // else{
-    //   transfer(asset.creator(), cost * 5 / 10);
-    //   transfer()
-    // }
+    //transfer asset ownership now
+    assert(asset.changeOwnership(msg.sender));
     return true;
   }
 
