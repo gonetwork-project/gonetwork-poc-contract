@@ -64,26 +64,29 @@ contract('GoToken', function(accounts) {
       return GT.buy(SA.address,{from:buyer1});
     })
     .then(function(v){
-      assert.equal(v,true, "");
+      assert(v);//tx has no return value, must wait for mining
       return SA.owner.call();
-    })
-    .catch(function(err){
-      return SA.owner.call();
-
     })
     .then(function(newOwner){
       assert.equal(newOwner, buyer1);
+      return GT.balanceOf.call(buyer1);
+    })
+    .then(function(buyer1Balance){
+      assert.equal(buyer1Balance.toNumber(),  10000000000000 -
+        300000000000, "buyer1 balance after primary purhcase");
+
       return GT.balanceOf.call(creator);
     })
 
     .then(function(creatorBalance){
       assert.equal(creatorBalance.toNumber(),
-      (300000000000 -(300000000000 * 0.015)) * 0.95,"minter balance");
+      (300000000000 -(300000000000 * 0.015)) * 0.95,"creator balance after primary purchase");
       return GT.balanceOf.call(SA.address);
     })
 
     .then(function(assetStake){
-      assert.equal(assetStake.toNumber(),(300000000000 -(300000000000 * 0.015)) * 0.05,"asset stake");
+      assert.equal(assetStake.toNumber(),(300000000000 -(300000000000 * 0.015)) * 0.05
+        ,"asset stake");
       return GT.balanceOf.call(primary);
     })
 
@@ -91,7 +94,53 @@ contract('GoToken', function(accounts) {
       assert.equal(minterBalance.toNumber(),
         10000 * (10 ** 18)//initial supply!
          - (20000000000000 + 10000000000000)//amount transferred to buyer 2 + buyer 1 for testing
-        +(300000000000 * 0.015),"asset stake");
+        +(300000000000 * 0.015),"minter balance after primary purchase");
+       return GT.buy(SA.address,{from:buyer2});
+    })
+
+    //SECONDARY PURCHASE NOW
+    .then(function(v){
+      assert(v);//transaction came
+      return SA.owner.call();
+    })
+    .then(function(newOwner){
+      assert.equal(newOwner, buyer2, "buyer 2 new owner of asset after secondary purchase");
+      return GT.balanceOf.call(creator);
+    })
+
+    .then(function(creatorBalance){
+      assert.equal(creatorBalance.toNumber(),
+      (300000000000 -(300000000000 * 0.015)) * 0.95 +
+      (300000000000 -(300000000000 * 0.015)) * 0.30 ,"creators new balance");
+      return GT.balanceOf.call(buyer1);
+    })
+
+    .then(function(buyer1Balance){
+      assert.equal(buyer1Balance.toNumber(),
+        10000000000000 -
+        300000000000 + //primary purchase
+      (300000000000 -(300000000000 * 0.015)) * 0.70 //reseller
+      ,"buyer1: resllers new balance");
+      return GT.balanceOf.call(buyer2);
+    })
+    .then(function(buyer2Balance){
+      assert.equal(buyer2Balance,20000000000000 - 300000000000, "buyer 2 balance after secondary purchase");
+      return GT.balanceOf.call(SA.address);
+
+    })
+
+    .then(function(assetStake){
+      assert.equal(assetStake.toNumber(),(300000000000 -(300000000000 * 0.015)) * 0.05
+        ,"asset stake wont change on secondary purchase");
+      return GT.balanceOf.call(primary);
+    })
+
+    .then(function(minterBalance){
+      assert.equal(minterBalance.toNumber(),
+        10000 * (10 ** 18)//initial supply!
+         - (20000000000000 + 10000000000000)//amount transferred to buyer 2 + buyer 1 for testing
+        +(300000000000 * 0.015)
+        + (300000000000 * 0.015),"minter made another transaction fee");
       return GT.name.call();
 
     })
