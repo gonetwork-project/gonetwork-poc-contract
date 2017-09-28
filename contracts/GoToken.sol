@@ -32,13 +32,15 @@ contract GoToken is StandardToken,IAssetManager {
   //gameCreatorAddress=>SmartAsset[] address
   mapping(address=>address[]) public assets;
 
-  function createAsset(uint256 cost,bytes32 _r, bytes32 _s) payable public returns(address){
+  function createAsset(uint256 cost) payable public returns(address){
     //address _creator, uint256 _cost, address _tokenAddress
-    SmartAsset asset = new SmartAsset(msg.sender, cost,address(this), _r,_s);
+    SmartAsset asset = new SmartAsset(msg.sender, cost,address(this));
     require(asset!= address(0));
     assets[msg.sender].push(address(asset));
     return address(asset);
   }
+
+
 
   //recall inter-function calls msg.sender is still the same address as the initial caller
   //hence the contract is executed under the same context unlike actor model
@@ -59,8 +61,8 @@ contract GoToken is StandardToken,IAssetManager {
       asset.changeOwnership(msg.sender);
       //transfer(address(asset))
     }else{
-      transfer(asset.creator(), calc_ppt(cost,CREATOR_SECONDARY_PPT));
-      transfer(minter, fee);
+      SafeERC20.safeTransfer(this,asset.creator(), calc_ppt(cost,CREATOR_SECONDARY_PPT));
+      SafeERC20.safeTransfer(this,minter, fee);
       asset.changeOwnership(msg.sender);
     }
     // else{

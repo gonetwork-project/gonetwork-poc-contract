@@ -17,38 +17,32 @@ contract SmartAsset is TokenDestructible,Verify{
   bool public sellable;
   address tokenAddress;
 
-  function SmartAsset(address _creator, uint256 _cost, address _tokenAddress,bytes32 _r, bytes32 _s){
+  function SmartAsset(address _creator, uint256 _cost, address _tokenAddress){
     cost = _cost;
     creator = _creator;
     owner = _creator;
     tokenAddress = _tokenAddress;
     sellable = true;
-    r= _r;
-    s= _s;
-
   }
 
-  //the only way this returns true is if the gameCreator signed it with their private key
-  function verify(bytes hash) public constant returns (bool){
+  function setVerificationParams(bytes32 _r, bytes32 _s)onlyOwner payable public returns(bool){
+    r = _r;
+    s = _s;
+    return true;
+  }
+
+  function verify(bytes32 hash) public constant returns (bool){
+    require(r.length > 0);
+    require(s.length >0);
     return verifySigner(hash, r, s, creator);
   }
 
-
-
-
-
-  // //this requires user giving SmartAsset address allowance to transfer funds
-  // function buy() public returns (bool){
-  //   require(sellable);
-  //   GoToken token = GoToken(tokenAddress);
-  //   require(token != address(0));
-  //   require(token.allowance(msg.sender,address(this))> cost);
-  //   require(token.transferFrom(msg.sender, address(this), cost));
-  //   require(token.transfer(owner, cost));
-  //   owner = msg.sender;
-  //   sellable = false;
-  //   return true;
+  //related to https://github.com/ethereum/web3.js/issues/445
+  // function verify_() internal constant returns (bool){
+  //   bytes32 hash = sha3(this);
+  //   return verifySigner(hash,r,s,creator);
   // }
+
 
   function isSellable(bool _flag) onlyOwner{
     sellable = _flag;
@@ -62,6 +56,18 @@ contract SmartAsset is TokenDestructible,Verify{
   function changeOwnership(address _newOwner) only(tokenAddress) payable returns (bool){
     require(_newOwner != address(0));
     owner = _newOwner;
+    return true;
+  }
+
+  function changeTokenAddress(address _newTokenAddress) onlyOwner payable returns (bool){
+    require(_newTokenAddress != address(0));
+    tokenAddress = _newTokenAddress;
+    return true;
+  }
+
+  function changeCost(uint256 _cost) onlyOwner payable returns (bool){
+    require(_cost >=0);
+    cost = _cost;
     return true;
   }
   /**

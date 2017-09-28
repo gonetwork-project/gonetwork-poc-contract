@@ -53,7 +53,7 @@ contract('Verify', function(accounts) {
     Verify.deployed().then(function(instance){
 
         let addr = web3.eth.accounts[0]
-        let msg = web3.sha3(addr);
+        let msg = web3.sha3(instance.address);
         let sig = web3.eth.sign(addr, msg)
         let r = sig.substr(0,66)
         let s = "0x" + sig.substr(66,64)
@@ -77,7 +77,7 @@ contract('Verify', function(accounts) {
     Verify.deployed().then(function(instance){
 
         let addr = web3.eth.accounts[0]
-        let msg = web3.sha3(addr);
+        let msg = web3.sha3(instance.address);
         let sig = web3.eth.sign(addr, msg)
         let r = sig.substr(0,66)
         let s = "0x" + sig.substr(66,64)
