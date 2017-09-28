@@ -57,6 +57,7 @@ contract('Verify', function(accounts) {
         let sig = web3.eth.sign(addr, msg)
         let r = sig.substr(0,66)
         let s = "0x" + sig.substr(66,64)
+
         let v = 27
 
         return instance.verifySigner.call(msg,r,s, web3.eth.accounts[0]);
