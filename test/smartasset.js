@@ -22,7 +22,21 @@ contract('SmartAsset', function(accounts) {
       return sa.verify(web3.sha3(web3.eth.accounts[1]));
     }).then(function(invalid){
       assert.equal(invalid, false, "Incorrect developer");
+      return sa.changeOwnership(web3.eth.accounts[2], {from: addr});
+    }).then(function(next){
+      return sa.owner.call();//assert.equal(fail, false, "Cant change changeOwnership");
+
+    }).then(function(owner){
+        assert.equal(owner, web3.eth.account[2], "Can change changeOwnership");
+       return sa.changeOwnership(web3.eth.accounts[3], {from: web3.eth.accounts[3]});
+    }).then(function(s){
+      assert(false, " was supposed to throw but didn't.");
+    }).catch(function(error){
+      return sa.owner.call();//assert.equal(fail, false, "Cant change changeOwnership");
+    }).then(function(owner){
+      assert.equal(owner, web3.eth.accounts[2], "Can change changeOwnership");
     });
+
    });
 
 
