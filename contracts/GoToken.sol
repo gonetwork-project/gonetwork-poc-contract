@@ -80,15 +80,15 @@ contract GoToken is StandardToken,IAssetManager {
     return true;
   }
 
-  function simpleBuy(address _asset) payable public returns (bool){
-    SmartAsset asset = SmartAsset(_asset);
-    require(asset != address(0));
-    uint256 cost = asset.cost();
-    require(balanceOf(msg.sender) > cost);
-    SafeERC20.safeTransfer(this, asset.owner(), cost);
-    asset.changeOwnership(msg.sender);
-    return true;
-  }
+  // function simpleBuy(address _asset) payable public returns (bool){
+  //   SmartAsset asset = SmartAsset(_asset);
+  //   require(asset != address(0));
+  //   uint256 cost = asset.cost();
+  //   require(balanceOf(msg.sender) > cost);
+  //   SafeERC20.safeTransfer(this, asset.owner(), cost);
+  //   asset.changeOwnership(msg.sender);
+  //   return true;
+  // }
 
   //use constant, we arent changing state here
   function calc_ppt(uint256 val, uint256 ppt) public constant returns(uint256) {
